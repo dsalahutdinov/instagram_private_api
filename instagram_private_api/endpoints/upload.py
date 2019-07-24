@@ -557,7 +557,8 @@ class UploadEndpointsMixin(object):
 
         max_retry_count = kwargs.pop('max_retry_count', 10)
         configure_delay = 0
-        for _ in range(max_retry_count + 1):
+        try_http = False
+        for current_try in range(max_retry_count + 1):
 
             try:
                 # Prevent excessively small chunks
@@ -592,6 +593,10 @@ class UploadEndpointsMixin(object):
                         chunk.start, chunk.end - 1, video_file_len)
                     self.logger.debug('POST {0!s}'.format(upload_url))
                     self.logger.debug('Uploading Content-Range: {0!s}'.format(headers['Content-Range']))
+
+                    # Sometimes ssl connection lags in instagram
+                    if try_http:
+                        upload_url = upload_url.replace('https://', 'http://')
 
                     req = compat_urllib_request.Request(
                         str(upload_url), data=data, headers=headers)
@@ -641,6 +646,8 @@ class UploadEndpointsMixin(object):
                 # connectivity prob, so let's just continue with another attempt
                 self.logger.warn('ClientConnectionError posting chunks: {}'.format(
                     str(cce)))
+                if current_try > 3:
+                    try_http = True
                 continue
 
         if not all_done:
