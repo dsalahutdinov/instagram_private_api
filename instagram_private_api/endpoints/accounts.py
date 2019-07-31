@@ -67,7 +67,7 @@ class AccountsEndpointsMixin(object):
                     challenge['url'], params={'choice': challenge_params['choice']}, return_response=True)
  
                 login_response = self._call_api(
-                    challenge['url'], params={'security_code': challenge_params['security_code']}, return_response=True)
+                    challenge['url'], params={'security_code': challenge_params['security_code'], 'choice': challenge_params['choice']}, return_response=True)
             else:
                 self.challenge_info = self._call_api(
                     challenge['url'], params=challenge_params, return_response=False)
