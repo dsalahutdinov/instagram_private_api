@@ -88,7 +88,6 @@ class Client(AccountsEndpointsMixin, DiscoverEndpointsMixin, FeedEndpointsMixin,
             - **on_login**: Callback after successful login
             - **proxy**: Specify a proxy ex: 'http://127.0.0.1:8888' (ALPHA)
             - **proxy_handler**: Specify your own proxy handler
-            - **challenge**: Challenge data
         :return:
         """
         self.username = username
@@ -160,9 +159,9 @@ class Client(AccountsEndpointsMixin, DiscoverEndpointsMixin, FeedEndpointsMixin,
                 kwargs.pop('version_code', None) or user_settings.get('version_code') or
                 Constants.VERSION_CODE)
 
-        cookie_string = kwargs.pop('cookie', None) or user_settings.get('cookie')
-        cookie_jar = ClientCookieJar(cookie_string=cookie_string)
-        if cookie_string and cookie_jar.auth_expires and int(time.time()) >= cookie_jar.auth_expires:
+        self.cookie = kwargs.pop('cookie', None) or user_settings.get('cookie')
+        cookie_jar = ClientCookieJar(cookie_string=self.cookie)
+        if self.cookie and cookie_jar.auth_expires and int(time.time()) >= cookie_jar.auth_expires:
             raise ClientCookieExpiredError('Cookie expired at {0!s}'.format(cookie_jar.auth_expires))
         cookie_handler = compat_urllib_request.HTTPCookieProcessor(cookie_jar)
 
@@ -203,14 +202,13 @@ class Client(AccountsEndpointsMixin, DiscoverEndpointsMixin, FeedEndpointsMixin,
             kwargs.pop('ad_id', None) or user_settings.get('ad_id') or
             self.generate_adid())
 
-        if not cookie_string:   # [TODO] There's probably a better way than to depend on cookie_string
+        super(Client, self).__init__()
+        self.logger.debug('USERAGENT: {0!s}'.format(self.user_agent))
+
+        if not self.cookie:   # [TODO] There's probably a better way than to depend on self.cookie
             if not self.username or not self.password:
                 raise ClientLoginRequiredError('login_required', code=400)
-            self.login(kwargs.pop('challenge', {}))
-
-        self.logger.debug('USERAGENT: {0!s}'.format(self.user_agent))
-        super(Client, self).__init__()
-
+ 
     @property
     def settings(self):
         """Helper property that extracts the settings that you should cache

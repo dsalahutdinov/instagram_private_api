@@ -21,7 +21,19 @@ except NameError:  # Python 2:
 class AccountsEndpointsMixin(object):
     """For endpoints in ``/accounts/``."""
 
-    def login(self, challenge = {}):
+    def challenge(self, url, params={}):
+        login_json = self._call_api(url, params=params, return_response=False)
+
+        if 'security_code' in params:
+            if not login_json.get('logged_in_user', {}).get('pk'):
+                raise ClientLoginError('Unable to login.')
+
+            if self.on_login:
+                on_login_callback = self.on_login
+                on_login_callback(self)
+        return login_json
+
+    def login(self):
         """Login."""
 
         prelogin_params = self._call_api(
@@ -45,41 +57,15 @@ class AccountsEndpointsMixin(object):
             'password': self.password,
             'login_attempt_count': '0',
         }
-        login_response = None
-        try:
-            login_response = self._call_api(
-                'accounts/login/', params=login_params, return_response=True)
-        except ClientCheckpointRequiredError as e:
-            print(e)
-            print(not challenge)
-            if not challenge:
-                raise e
+        login_response = self._call_api(
+            'accounts/login/', params=login_params, return_response=True)
  
-        if challenge:
-            challenge_params = {}
-            if 'params' in challenge:
-                challenge_params = challenge['params']
-            print(challenge_params)
-            print('params' in challenge and 'security_code' in challenge_params)
-            if ('params' in challenge and 'security_code' in challenge_params):
-                print('call login challenge')
-                login_response = self._call_api(
-                    challenge['url'], params={'choice': challenge_params['choice']}, return_response=True)
- 
-                login_response = self._call_api(
-                    challenge['url'], params={'security_code': challenge_params['security_code'], 'choice': challenge_params['choice']}, return_response=True)
-            else:
-                self.challenge_info = self._call_api(
-                    challenge['url'], params=challenge_params, return_response=False)
-                return
-
         if not self.csrftoken:
             raise ClientError(
                 'Unable to get csrf from login.',
                 error_response=self._read_response(login_response))
 
         login_json = json.loads(self._read_response(login_response))
-        print(login_json)
 
         if not login_json.get('logged_in_user', {}).get('pk'):
             raise ClientLoginError('Unable to login.')
