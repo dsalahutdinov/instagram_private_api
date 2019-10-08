@@ -208,7 +208,7 @@ class Client(AccountsEndpointsMixin, DiscoverEndpointsMixin, FeedEndpointsMixin,
         if not self.cookie:   # [TODO] There's probably a better way than to depend on self.cookie
             if not self.username or not self.password:
                 raise ClientLoginRequiredError('login_required', code=400)
- 
+
     @property
     def settings(self):
         """Helper property that extracts the settings that you should cache
@@ -529,8 +529,8 @@ class Client(AccountsEndpointsMixin, DiscoverEndpointsMixin, FeedEndpointsMixin,
                 compat_urllib_error.URLError,   # URLError is base of HTTPError
                 compat_http_client.HTTPException,
                 ConnectionError) as connection_error:
-            raise ClientConnectionError('{} {}'.format(
-                connection_error.__class__.__name__, str(connection_error)))
+            raise ClientConnectionError('client.py/call_api: {} {} {}'.format(
+                connection_error.__class__.__name__, str(connection_error), url))
 
         if return_response:
             return response

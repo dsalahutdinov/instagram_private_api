@@ -59,7 +59,7 @@ class AccountsEndpointsMixin(object):
         }
         login_response = self._call_api(
             'accounts/login/', params=login_params, return_response=True)
- 
+
         if not self.csrftoken:
             raise ClientError(
                 'Unable to get csrf from login.',
@@ -168,7 +168,7 @@ class AccountsEndpointsMixin(object):
         except (SSLError, timeout, SocketError,
                 compat_urllib_error.URLError,   # URLError is base of HTTPError
                 compat_http_client.HTTPException) as connection_error:
-            raise ClientConnectionError('{} {}'.format(
+            raise ClientConnectionError('accounts.py: {} {}'.format(
                 connection_error.__class__.__name__, str(connection_error)))
 
         post_response = self._read_response(response)

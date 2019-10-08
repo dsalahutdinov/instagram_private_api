@@ -451,7 +451,7 @@ class UploadEndpointsMixin(object):
         except (SSLError, timeout, SocketError,
                 compat_urllib_error.URLError,   # URLError is base of HTTPError
                 compat_http_client.HTTPException) as connection_error:
-            raise ClientConnectionError('{} {}'.format(
+            raise ClientConnectionError('upload.py/post_photo: {} {}'.format(
                 connection_error.__class__.__name__, str(connection_error)))
 
         post_response = self._read_response(response)
@@ -634,7 +634,7 @@ class UploadEndpointsMixin(object):
                     except (SSLError, timeout, SocketError,
                             compat_urllib_error.URLError,   # URLError is base of HTTPError
                             compat_http_client.HTTPException) as connection_error:
-                        raise ClientConnectionError('{} {}'.format(
+                        raise ClientConnectionError('upload.py/post_video: {} {}'.format(
                             connection_error.__class__.__name__, str(connection_error)))
 
                 else:
